@@ -1,0 +1,29 @@
+let posts = [];
+let favorites = [];
+let activeCategory = 'all';
+let showFavoritesOnly = false;
+
+async function fetchPosts() {
+  try {
+    const res = await fetch('posts.json?t=' + Date.now()); // ক্যাশ এড়াতে
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    posts = await res.json();
+    renderCategories();
+    renderPosts();
+    document.getElementById('statusText').textContent = `${posts.length}টি পোস্ট • স্বয়ংক্রিয় আপডেট`;
+  } catch(e) {
+    console.warn('Fetch failed:', e.message);
+  }
+}
+
+function init() {
+  if (localStorage.getItem('karma_poetry_theme') === 'light') {
+    document.body.classList.add('light');
+    toggleTheme(); toggleTheme();
+  }
+  fetchPosts();
+  setInterval(fetchPosts, 60000); // প্রতি ১ মিনিটে নতুন পোস্ট চেক
+  setInterval(updateStatusText, 5000);
+}
+
+// "এখনই তৈরি করুন" বাটন সরিয়ে দিন বা লুকিয়ে রাখুন
