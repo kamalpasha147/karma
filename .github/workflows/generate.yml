@@ -1,0 +1,31 @@
+name: Generate Poetry Posts
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # প্রতি ৫ মিনিটে (GitHub-এর সর্বনিম্ন)
+  workflow_dispatch:          # ম্যানুয়ালি চালানোর বাটন
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write         # পোস্ট কমিট করার জন্য
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Generate posts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node generator.js
+      
+      - name: Commit and push
+        run: |
+          git config user.name "KARMA Bot"
+          git config user.email "bot@karma.local"
+          git add posts.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-generate poetry [skip ci]"
+          git push
